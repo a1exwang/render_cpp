@@ -19,8 +19,8 @@ public:
         const cv::Vec3d &reflectColor,
         double diffuseProbability,
         const cv::Vec3d &diffuseColor,
-        bool isLight,
-        const std::shared_ptr<const cv::Vec3d> &lightColor
+        bool isLight = false,
+        const std::shared_ptr<const cv::Vec3d> &lightColor = nullptr
   ) : ObjectBase(
           name, position, xAxis, yAxis,
           reflectProbability, reflectColor, diffuseProbability, diffuseColor,
