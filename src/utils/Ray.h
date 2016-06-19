@@ -10,6 +10,7 @@
 namespace alex {
 class Ray {
 public:
+  Ray() { }
   Ray(const cv::Vec3d& startPoint, const cv::Vec3d& _direction) :startPoint(startPoint) {
     this->directionN = cv::normalize(_direction);
   }

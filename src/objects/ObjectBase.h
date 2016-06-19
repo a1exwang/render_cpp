@@ -7,7 +7,7 @@
 
 #include <opencv/cv.h>
 #include <memory>
-#include "../helpers/Ray.h"
+#include "../utils/Ray.h"
 
 namespace alex {
 class ObjectBase {
@@ -42,6 +42,12 @@ public:
                        cv::Vec3d &color, Ray &outRay) const;
   virtual bool diffuse(const Ray &inRay, const cv::Vec3d &intersection, const cv::Vec3d &normalVecN,
                        cv::Vec3d &color, Ray &outRay) const;
+
+  double getReflectProbability() const { return reflectProbability; }
+  double getDiffuseProbability() const { return diffuseProbability; }
+  bool isALight() const { return isLight; }
+  std::shared_ptr<const cv::Vec3d> getLightColor() const { return lightColor; }
+  std::string getName() const { return name; }
 
 protected:
   std::string name;

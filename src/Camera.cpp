@@ -4,30 +4,9 @@
 
 #include "Camera.h"
 #include <cmath>
+#include <opencv/highgui.h>
 
-std::shared_ptr<Ray> alex::Camera::getRay(int x, int y) const {
-  /* left = self.up.cross(self.frontN).normalize
-  retina_center = self.position - self.frontN.normalize * self.image_distance
-  retina_position = retina_center +
-                    left * (2.0 * (x.to_f / self.width - 0.5) * self.retina_width) +
-                    self.up.normalize * (2 * (y.to_f / self.height - 0.5) * self.retina_height)
-  theta = Random.rand
-  rand_vector = (left.normalize * Math.cos(theta) + self.up.normalize * Math.sin(theta)) * self.aperture_radius
-  aperture_position = self.position + rand_vector
-# direction = aperture_position - retina_position
-
-  object_distance = self.focal_distance * self.image_distance / (self.image_distance - self.focal_distance)
-
-# calculate focal plane
-  point_on_focal_plane = self.position + (self.frontN.normalize) * object_distance
-  normal_vector_focal_plane = self.frontN
-
-# get the intersection of focal plane and this ray
-  r = Ray.new(self.position - retina_position, retina_position)
-                  target_point = intersect_plane(r, point_on_focal_plane, normal_vector_focal_plane)
-
-  Ray.new(target_point - aperture_position, aperture_position) */
-
+std::shared_ptr<alex::Ray> alex::Camera::getRay(int x, int y) const {
   if (x > width || y > height)
     return nullptr;
 
@@ -49,8 +28,16 @@ std::shared_ptr<Ray> alex::Camera::getRay(int x, int y) const {
 }
 
 cv::Vec3d alex::Camera::renderAt(int x, int y) const {
-  
-  return cv::Vec<double, 3>();
+  int sampleTimes = 10;
+  std::vector<cv::Vec3d> preSamples;
+  cv::Vec3d result(0, 0, 0);
+  for (int i = 0; i < sampleTimes; ++i) {
+    auto ray = getRay(x, y);
+    auto color = this->pathTracer->trace(*ray);
+    preSamples.push_back(color);
+    result += color;
+  }
+  return result / sampleTimes;
 }
 
 double alex::Camera::randRange(double start, double end) {
@@ -64,6 +51,26 @@ cv::Vec3d alex::Camera::intersectWithPlane(const Ray &ray, const cv::Vec3d &poin
   double t = (point - ray.getStartPoint()).dot(normalVecN) / (normalVecN.dot(ray.getDirectionN()));
   return ray.getStartPoint() + ray.getDirectionN() * t;
 }
+
+void alex::Camera::startRendering() const {
+  cv::Mat img(cv::Size(width, height), CV_32FC3);
+
+  for (int x = 0; x < width; ++x) {
+    for (int y = 0; y < height; ++y) {
+      auto color = renderAt(x, y);
+      cv::Vec3f newColor;
+      newColor[0] = (float) color[0];
+      newColor[1] = (float) color[1];
+      newColor[2] = (float) color[2];
+
+      img.at<cv::Vec3f>(y, x) = newColor;
+    }
+  }
+  std::cout << img << std::endl;
+  imwrite("image.png", img);
+}
+
+
 
 
 

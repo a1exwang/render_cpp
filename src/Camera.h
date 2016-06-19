@@ -5,7 +5,8 @@
 #ifndef RENDER_CAMERA_H
 #define RENDER_CAMERA_H
 
-#include "helpers/Ray.h"
+#include "utils/Ray.h"
+#include "PathTrace.h"
 #include <opencv/cv.h>
 #include <memory>
 
@@ -13,7 +14,8 @@
 namespace alex {
 class Camera {
 public:
-  Camera(const cv::Vec3d &position,
+  Camera(std::shared_ptr<const World> world,
+         const cv::Vec3d &position,
          const cv::Vec3d &front,
          const cv::Vec3d &up,
          double retinaWidth,
@@ -23,7 +25,9 @@ public:
          double imageDistance,
          double apertureRadius,
          double focalDistance
-  ) :position(position),
+  ) :world(world),
+     pathTracer(new PathTrace(*world)),
+     position(position),
      frontN(normalize(front)),
      upN(normalize(up)),
      retinaWidth(retinaWidth),
@@ -42,11 +46,16 @@ public:
   std::shared_ptr<Ray> getRay(int x, int y) const;
   cv::Vec3d renderAt(int x, int y) const;
 
+  void startRendering() const;
+
 private:
   static double randRange(double start, double end);
   static cv::Vec3d intersectWithPlane(const Ray &ray, const cv::Vec3d &, const cv::Vec3d &);
 
 private:
+  std::shared_ptr<const World> world;
+  std::shared_ptr<PathTrace> pathTracer;
+
   const cv::Vec3d position;
   const cv::Vec3d frontN;
   const cv::Vec3d upN;

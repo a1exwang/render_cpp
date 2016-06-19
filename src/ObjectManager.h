@@ -15,7 +15,7 @@ class ObjectManager {
 public:
   ObjectManager() { }
   void addObject(std::shared_ptr<ObjectBase> object);
-  bool determineIntersection(const Ray &ray, 
+  std::shared_ptr<const ObjectBase> determineIntersection(const Ray &ray,
                              cv::Vec3d &intersection, 
                              cv::Vec3d &normalVecN, 
                              bool &outsideIn) const;
