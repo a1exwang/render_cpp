@@ -7,6 +7,7 @@
 
 #include <string>
 #include <iostream>
+#include <cxcore.h>
 
 namespace alex {
 
@@ -28,12 +29,13 @@ public:
       throw "logger uninitialized!";
     }
   }
-  static void setup(std::string output = "stdout") {
+  static void setup(std::string output = "stdout", int verboseLevel = Level::Info) {
     theInstance = new Logger;
     theInstance->resetOutput(output);
+    theInstance->resetVerboseLevel(verboseLevel);
   }
 
-  void i(std::string tag, std::string str, int indent = 0) const;
+  void i(std::string tag, std::string str, int indent = 0, ...) const;
   void w(std::string tag, std::string str, int indent = 0) const;
   void e(std::string tag, std::string str, int indent = 0) const;
 
@@ -41,6 +43,7 @@ private:
   Logger(std::ostream *os = nullptr) :os(os), needFlush(false), needDelete(false) { }
 
   void resetOutput(std::string output = "stdout");
+  void resetVerboseLevel(int l) { this->currentLevel = l; }
   void output(int level, std::string tag, std::string str, int indent = 0) const;
   bool needFlush;
   bool needDelete;
@@ -49,6 +52,9 @@ private:
 
   static Logger *theInstance;
 };
+
+std::string vec3ToStr(const cv::Vec3d v);
+
 }
 
 #endif //RENDER_LOGGER_H

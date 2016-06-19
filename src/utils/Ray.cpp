@@ -3,3 +3,11 @@
 //
 
 #include "Ray.h"
+#include <sstream>
+
+std::string alex::Ray::toString() {
+  std::stringstream ss;
+  ss << "ray(" << startPoint << " " << directionN << ")";
+  return ss.str();
+}
+

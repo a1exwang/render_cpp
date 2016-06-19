@@ -3,13 +3,15 @@
 //
 
 #include "PathTrace.h"
+#include "utils/Logger.h"
 
 cv::Vec3d alex::PathTrace::trace(const alex::Ray &ray) const {
-
   cv::Vec3d intersection, normalVecN;
   bool outsideIn;
   auto object = world.determineIntersection(ray, intersection, normalVecN, outsideIn);
+
   if (object != nullptr) {
+    Log.i("trace", "intersect(%s)", 0, object->getName().c_str());
     if (object->isALight()) {
       auto lightColor = object->getLightColor();
       if (lightColor != nullptr) {
@@ -26,9 +28,11 @@ cv::Vec3d alex::PathTrace::trace(const alex::Ray &ray) const {
       cv::Vec3d color;
       Ray outRay;
       if (item == 0 && object->diffuse(ray, intersection, normalVecN, color, outRay)) {
+        Log.i("trace", "diffuse(%s)", 0, object->getName().c_str());
         return trace(outRay).mul(color);
       }
       else if (item == 1 && object->reflect(ray, intersection, normalVecN, color, outRay)) {
+        Log.i("trace", "reflect(%s)", 0, object->getName().c_str());
         return trace(outRay).mul(color);
       }
     }

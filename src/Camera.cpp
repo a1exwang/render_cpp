@@ -3,7 +3,9 @@
 //
 
 #include "Camera.h"
+#include "utils/Logger.h"
 #include <cmath>
+
 #include <opencv/highgui.h>
 
 std::shared_ptr<alex::Ray> alex::Camera::getRay(int x, int y) const {
@@ -53,18 +55,19 @@ cv::Vec3d alex::Camera::intersectWithPlane(const Ray &ray, const cv::Vec3d &poin
 }
 
 void alex::Camera::startRendering() const {
-  cv::Mat img(cv::Size(width, height), CV_32FC3);
+  cv::Mat img(cv::Size(width, height), CV_8UC3);
 
   for (int x = 0; x < width; ++x) {
     for (int y = 0; y < height; ++y) {
       auto color = renderAt(x, y);
-      cv::Vec3f newColor;
-      newColor[0] = (float) color[0];
-      newColor[1] = (float) color[1];
-      newColor[2] = (float) color[2];
+      cv::Vec3b newColor;
+      newColor[0] = (uint8_t) (color[0] * 255);
+      newColor[1] = (uint8_t) (color[1] * 255);
+      newColor[2] = (uint8_t) (color[2] * 255);
 
-      img.at<cv::Vec3f>(y, x) = newColor;
+      img.at<cv::Vec3b>(y, x) = newColor;
     }
+//    Log.i("camera very long tag", "line");
   }
   std::cout << img << std::endl;
   imwrite("image.png", img);

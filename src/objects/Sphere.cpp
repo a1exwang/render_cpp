@@ -9,7 +9,7 @@ bool alex::Sphere::intersect(const alex::Ray &ray, cv::Vec3d &intersection, cv::
   double t = (this->position - ray.getStartPoint()).dot(ray.getDirectionN());
   auto nearestPoint = ray.getStartPoint() + ray.getDirectionN() * t;
 
-  if (isInner(nearestPoint))
+  if (!isInner(nearestPoint))
     return false;
 
   double nearestDis = cv::norm(nearestPoint - this->position);
@@ -27,7 +27,10 @@ bool alex::Sphere::intersect(const alex::Ray &ray, cv::Vec3d &intersection, cv::
 }
 
 bool alex::Sphere::isInner(const cv::Vec3d &point) const {
-  return cv::norm(point - this->position) < this->radius;
+  auto v = point - this->position;
+  auto n = cv::norm(v);
+//  std::cout << "norm(" << v << ") is " << cv::norm(v) << std::endl;
+  return n < this->radius;
 }
 
 

@@ -15,6 +15,8 @@ public:
     this->directionN = cv::normalize(_direction);
   }
 
+  std::string toString();
+
   const cv::Vec3d &getDirectionN() const { return directionN; };
   const cv::Vec3d &getStartPoint() const { return startPoint; };
 

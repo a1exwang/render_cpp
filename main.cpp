@@ -12,23 +12,19 @@ using namespace cv;
 using namespace alex;
 
 int main(int argc, char** argv) {
-
   Logger::setup();
-
-  Log.i("main", "hello\nmultiline");
 
   int width = 160;
   int height = 90;
 
   auto world = shared_ptr<World>(new World);
 
-
   auto bigLight = Sphere::createLight(
           "BigLight",
-          Vec3d(3, 1, 5),
+          Vec3d(7, 1, 5),
           Vec3d(1, 0, 0),
           Vec3d(0, 1, 0),
-          0.5,
+          3,
           std::shared_ptr<const Vec3d>(new Vec3d(1, 1, 1)));
 
   auto bigSphere = shared_ptr<Sphere>(new Sphere(
@@ -40,7 +36,7 @@ int main(int argc, char** argv) {
           Vec3d(1, 1, 1),
           0.4,
           Vec3d(1, 1, 1),
-          0.5
+          3
   ));
 
   world->addObject(bigLight);
@@ -55,9 +51,9 @@ int main(int argc, char** argv) {
                 0.9,
                 width,
                 height,
-                0.01709,
+                1/(1/0.017 - 1/3.5),
                 0.0001,
-                0.0017
+                0.017
   );
 
   camera.startRendering();
