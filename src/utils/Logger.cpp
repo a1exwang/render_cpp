@@ -28,7 +28,7 @@ void alex::Logger::resetOutput(std::string output) {
     needFlush = false;
   }
   else {
-    os = new std::fstream(output);
+    os = new std::fstream(output, std::ios::trunc | std::ios::out);
     needDelete = true;
     needFlush = true;
   }
@@ -51,8 +51,6 @@ static std::string getLevelStr(int level) {
 
 void alex::Logger::output(int level, std::string tag, std::string str, int indent) const {
   if (level <= currentLevel && os != nullptr) {
-    std::time_t now_c = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-
     std::stringstream ss;
     ss << getLevelStr(level) << " ";
 
@@ -91,8 +89,20 @@ void alex::Logger::output(int level, std::string tag, std::string str, int inden
       }
       (*os) << line << std::endl;
     }
+    os->flush();
   }
 }
+void alex::Logger::v(std::string tag, std::string str, int indent, ...) const {
+  char buf[1024];
+
+  va_list args;
+  va_start(args, indent);
+  vsnprintf(buf, sizeof(buf), str.c_str(), args);
+  va_end(args);
+
+  output(Level::Verbose, tag, buf, indent);
+}
+
 
 void alex::Logger::i(std::string tag, std::string str, int indent, ...) const {
   char buf[1024];
@@ -104,11 +114,25 @@ void alex::Logger::i(std::string tag, std::string str, int indent, ...) const {
 
   output(Level::Info, tag, buf, indent);
 }
-void alex::Logger::w(std::string tag, std::string str, int indent) const {
-  output(Level::Warning, tag, str, indent);
+void alex::Logger::w(std::string tag, std::string str, int indent, ...) const {
+  char buf[1024];
+
+  va_list args;
+  va_start(args, indent);
+  vsnprintf(buf, sizeof(buf), str.c_str(), args);
+  va_end(args);
+
+  output(Level::Warning, tag, buf, indent);
 }
-void alex::Logger::e(std::string tag, std::string str, int indent) const {
-  output(Level::Error, tag, str, indent);
+void alex::Logger::e(std::string tag, std::string str, int indent, ...) const {
+  char buf[1024];
+
+  va_list args;
+  va_start(args, indent);
+  vsnprintf(buf, sizeof(buf), str.c_str(), args);
+  va_end(args);
+
+  output(Level::Error, tag, buf, indent);
 }
 
 

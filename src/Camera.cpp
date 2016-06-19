@@ -4,6 +4,7 @@
 
 #include "Camera.h"
 #include "utils/Logger.h"
+#include "utils/MathUtils.h"
 #include <cmath>
 
 #include <opencv/highgui.h>
@@ -14,11 +15,11 @@ std::shared_ptr<alex::Ray> alex::Camera::getRay(int x, int y) const {
 
   auto retinaCenter = this->position - this->frontN * this->imageDistance;
   auto retinaPosition = retinaCenter +
-                        leftN * ((2.0 * x / this->width - 1) * this->retinaWidth) +
+                        rightN * ((2.0 * x / this->width - 1) * this->retinaWidth) +
                         upN * ((2.0 * y / this->height - 1) * this->retinaHeight);
 
   double theta = randRange(0, M_PI);
-  auto randVec = (leftN * cos(theta) + upN * sin(theta)) * this->apertureRadius;
+  auto randVec = (rightN * cos(theta) + upN * sin(theta)) * this->apertureRadius;
   auto aperturePosition = this->position + randVec;
 
   double objectDis = this->focalDistance * this->imageDistance / (this->imageDistance - this->focalDistance);
@@ -30,24 +31,19 @@ std::shared_ptr<alex::Ray> alex::Camera::getRay(int x, int y) const {
 }
 
 cv::Vec3d alex::Camera::renderAt(int x, int y) const {
-  int sampleTimes = 10;
   std::vector<cv::Vec3d> preSamples;
   cv::Vec3d result(0, 0, 0);
-  for (int i = 0; i < sampleTimes; ++i) {
+  for (int i = 0; i < this->monteCarloTimes; ++i) {
     auto ray = getRay(x, y);
-    auto color = this->pathTracer->trace(*ray);
+
+    PathTrace::TraceInfo info(x, y);
+    auto color = this->pathTracer->trace(*ray, &info);
     preSamples.push_back(color);
     result += color;
   }
-  return result / sampleTimes;
+  return result / this->monteCarloTimes;
 }
 
-double alex::Camera::randRange(double start, double end) {
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_real_distribution<> dis(start, end);
-  return dis(gen);
-}
 
 cv::Vec3d alex::Camera::intersectWithPlane(const Ray &ray, const cv::Vec3d &point, const cv::Vec3d &normalVecN) {
   double t = (point - ray.getStartPoint()).dot(normalVecN) / (normalVecN.dot(ray.getDirectionN()));
@@ -67,9 +63,9 @@ void alex::Camera::startRendering() const {
 
       img.at<cv::Vec3b>(y, x) = newColor;
     }
-//    Log.i("camera very long tag", "line");
+    if (x % 20 == 0)
+      std::cout << "progress " << std::setprecision(3) << 100.0 * x / width << "%" << std::endl;
   }
-  std::cout << img << std::endl;
   imwrite("image.png", img);
 }
 

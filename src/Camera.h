@@ -24,7 +24,8 @@ public:
          int height,
          double imageDistance,
          double apertureRadius,
-         double focalDistance
+         double focalDistance,
+         int monteCarloTimes
   ) :world(world),
      pathTracer(new PathTrace(*world)),
      position(position),
@@ -36,9 +37,9 @@ public:
      height(height),
      imageDistance(imageDistance),
      apertureRadius(apertureRadius),
-     focalDistance(focalDistance)
-  {
-    leftN = front.cross(leftN);
+     focalDistance(focalDistance),
+     monteCarloTimes(monteCarloTimes) {
+    rightN = frontN.cross(upN);
   }
 
   int getWidth() const { return width; }
@@ -49,7 +50,6 @@ public:
   void startRendering() const;
 
 private:
-  static double randRange(double start, double end);
   static cv::Vec3d intersectWithPlane(const Ray &ray, const cv::Vec3d &, const cv::Vec3d &);
 
 private:
@@ -59,7 +59,7 @@ private:
   const cv::Vec3d position;
   const cv::Vec3d frontN;
   const cv::Vec3d upN;
-  cv::Vec3d leftN;
+  cv::Vec3d rightN;
   double retinaWidth;
   double retinaHeight;
   int width;
@@ -67,6 +67,7 @@ private:
   double imageDistance;
   double apertureRadius;
   double focalDistance;
+  int monteCarloTimes;
 };
 }
 

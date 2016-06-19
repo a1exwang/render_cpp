@@ -8,6 +8,9 @@
 #include <opencv/cv.h>
 
 namespace alex {
+
+constexpr const double Epsilon = 1e-5;
+
 class Ray {
 public:
   Ray() { }
@@ -23,6 +26,10 @@ public:
   cv::Vec3d startPoint;
   cv::Vec3d directionN; // this is normalized by default
 };
+
+
+
+
 }
 
 

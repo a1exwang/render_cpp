@@ -4,17 +4,29 @@
 
 #include "PathTrace.h"
 #include "utils/Logger.h"
+#include "utils/MathUtils.h"
 
-cv::Vec3d alex::PathTrace::trace(const alex::Ray &ray) const {
+cv::Vec3d alex::PathTrace::trace(const alex::Ray &ray, TraceInfo *info) const {
+  return doTrace(ray, info, cv::Vec3d(1, 1, 1));
+}
+
+cv::Vec3d alex::PathTrace::doTrace(const Ray &ray, TraceInfo *info, const cv::Vec3d &prevColor) const {
+  if (norm(prevColor) < alex::Epsilon * alex::Epsilon) {
+    info->appendInfo(PT_TYPE_TOO_WEAK);
+    Log.i("trace", info->toString());
+    return prevColor;
+  }
+
   cv::Vec3d intersection, normalVecN;
   bool outsideIn;
   auto object = world.determineIntersection(ray, intersection, normalVecN, outsideIn);
 
   if (object != nullptr) {
-    Log.i("trace", "intersect(%s)", 0, object->getName().c_str());
     if (object->isALight()) {
       auto lightColor = object->getLightColor();
       if (lightColor != nullptr) {
+        info->appendInfo(PT_TYPE_LIGHT, object, intersection);
+        Log.i("trace", info->toString());
         return *lightColor;
       }
       else {
@@ -24,31 +36,35 @@ cv::Vec3d alex::PathTrace::trace(const alex::Ray &ray) const {
     }
     else {
       double probabilities[] = { object->getDiffuseProbability(), object->getReflectProbability() };
-      int item = rouletteRandom(probabilities, sizeof(probabilities));
+      constexpr int indexDiffuse = 0, indexReflect = 1;
+      int item = rouletteRandom(probabilities, sizeof(probabilities) / sizeof(double));
       cv::Vec3d color;
       Ray outRay;
-      if (item == 0 && object->diffuse(ray, intersection, normalVecN, color, outRay)) {
-        Log.i("trace", "diffuse(%s)", 0, object->getName().c_str());
-        return trace(outRay).mul(color);
+      if (item == indexDiffuse && object->diffuse(ray, intersection, normalVecN, color, outRay)) {
+        info->appendInfo(PT_TYPE_DIFFUSE, object, intersection, outRay.getDirectionN());
+        return doTrace(outRay, info, prevColor.mul(color));
       }
-      else if (item == 1 && object->reflect(ray, intersection, normalVecN, color, outRay)) {
-        Log.i("trace", "reflect(%s)", 0, object->getName().c_str());
-        return trace(outRay).mul(color);
+      else if (item == indexReflect && object->reflect(ray, intersection, normalVecN, color, outRay)) {
+        info->appendInfo(PT_TYPE_REFLECT, object, intersection, outRay.getDirectionN());
+        return doTrace(outRay, info, prevColor.mul(color));
+      }
+      else if (item >= (int)(sizeof(probabilities) / sizeof(double))) {
+        Log.e("trace", "invalid rouletteRandom");
+        throw 1;
+      }
+      else {
+        info->appendInfo(PT_TYPE_NO_OUTBOUND);
+        Log.i("trace", info->toString());
+        return cv::Vec3d(0, 0, 0);
       }
     }
   }
-  return cv::Vec3d(0, 0, 0);
+  else {
+    info->appendInfo(PT_TYPE_NO_INTERSECTION);
+    Log.v("trace", info->toString());
+    return cv::Vec3d(0, 0, 0);
+  }
 }
 
-int alex::PathTrace::rouletteRandom(std::vector<double> arr) {
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::discrete_distribution<> dis(arr.begin(), arr.end());
-  return dis(gen);
-}
-int alex::PathTrace::rouletteRandom(double *arr, int size) {
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::discrete_distribution<> dis(arr, arr + size);
-  return dis(gen);
-}
+
+
