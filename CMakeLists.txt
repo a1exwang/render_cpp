@@ -1,11 +1,24 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.2)
 project(render)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 find_package(OpenCV REQUIRED)
 
-set(SOURCE_FILES main.cpp src/PathTrace.cpp src/PathTrace.h src/Camera.cpp src/Camera.h src/World.cpp src/World.h src/objects/ObjectBase.cpp src/objects/ObjectBase.h src/ObjectManager.cpp src/ObjectManager.h src/utils/Ray.cpp src/utils/Ray.h src/objects/Sphere.cpp src/objects/Sphere.h src/utils/Logger.cpp src/utils/Logger.h src/utils/MathUtils.cpp src/objects/Plane.cpp src/objects/Plane.h)
+set(SOURCE_FILES
+        main.cpp
+        src/PathTrace.cpp
+        src/Camera.cpp
+        src/World.cpp
+        src/objects/ObjectBase.cpp
+        src/ObjectManager.cpp
+        src/utils/Ray.cpp
+        src/objects/Sphere.cpp
+        src/utils/Logger.cpp
+        src/utils/MathUtils.cpp
+        src/objects/Plane.cpp)
+#add_compile_options(-pg)
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
 add_compile_options(-Wall)
 link_libraries(m)
 link_libraries(pthread)

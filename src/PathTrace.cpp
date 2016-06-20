@@ -35,9 +35,9 @@ cv::Vec3d alex::PathTrace::doTrace(const Ray &ray, TraceInfo *info, const cv::Ve
       }
     }
     else {
-//      double probabilities[] = { object->getDiffuseProbability(), object->getReflectProbability() };
-      std::initializer_list<double> list({ object->getDiffuseProbability(), object->getReflectProbability() });
-      constexpr int indexDiffuse = 0, indexReflect = 1;
+      std::initializer_list<double> list(
+              { object->getDiffuseProbability(), object->getReflectProbability(), object->getRefractProbability() });
+      constexpr int indexDiffuse = 0, indexReflect = 1, indexRefract = 2;
       int item = rouletteRandom(list);
       cv::Vec3d color;
       Ray outRay;
@@ -47,6 +47,10 @@ cv::Vec3d alex::PathTrace::doTrace(const Ray &ray, TraceInfo *info, const cv::Ve
       }
       else if (item == indexReflect && object->reflect(ray, intersection, normalVecN, color, outRay)) {
         info->appendInfo(PT_TYPE_REFLECT, object, intersection, outRay.getDirectionN());
+        return doTrace(outRay, info, prevColor.mul(color));
+      }
+      else if (item == indexRefract && object->refract(ray, intersection, normalVecN, color, outRay)) {
+        info->appendInfo(PT_TYPE_REFRACT, object, intersection, outRay.getDirectionN());
         return doTrace(outRay, info, prevColor.mul(color));
       }
       else if (item >= (int)list.size()) {

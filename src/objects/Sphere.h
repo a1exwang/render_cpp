@@ -18,10 +18,17 @@ public:
          const cv::Vec3d &reflectColor,
          double diffuseProbability,
          const cv::Vec3d &diffuseColor,
+         double refractProbability,
+         const cv::Vec3d &refractColor,
+         double refractive,
          double radius,
          bool isLight = false,
          std::shared_ptr<const cv::Vec3d> lightColor = nullptr
-  ) : ObjectBase(name, position, xAxis, yAxis, reflectProbability, reflectColor, diffuseProbability, diffuseColor, isLight, lightColor) {
+  ) : ObjectBase(name, position, xAxis, yAxis,
+                 reflectProbability, reflectColor,
+                 diffuseProbability, diffuseColor,
+                 refractProbability, refractColor, refractive,
+                 isLight, lightColor) {
     if (radius <= 0)
       throw "Error sphere radius <= 0";
     this->radius = radius;
@@ -33,8 +40,9 @@ public:
                                              const cv::Vec3d &yAxis,
                                              double radius,
                                              const cv::Vec3d &lightColor) {
-    return std::shared_ptr<Sphere>(new Sphere(name, position, xAxis, yAxis,
-                      0, cv::Vec3d(), 0, cv::Vec3d(),
+    return std::shared_ptr<Sphere>(
+            new Sphere(name, position, xAxis, yAxis,
+                      0, cv::Vec3d(), 0, cv::Vec3d(), 0, cv::Vec3d(), 1,
                       radius, true, std::shared_ptr<const cv::Vec3d>(new cv::Vec3d(lightColor))));
   }
 

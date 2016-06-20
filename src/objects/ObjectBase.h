@@ -21,6 +21,9 @@ public:
           const cv::Vec3d &reflectColor,
           double diffuseProbability,
           const cv::Vec3d &diffuseColor,
+          double refractProbability,
+          const cv::Vec3d &refractColor,
+          double refractive,
           bool isLight = false,
           std::shared_ptr<const cv::Vec3d> lightColor = nullptr
   ) :name(name),
@@ -31,6 +34,9 @@ public:
      reflectColor(reflectColor),
      diffuseProbability(diffuseProbability),
      diffuseColor(diffuseColor),
+     refractProbability(refractProbability),
+     refractColor(refractColor),
+     refractive(refractive),
      isLight(isLight),
      lightColor(lightColor)
   { }
@@ -42,9 +48,12 @@ public:
                        cv::Vec3d &color, Ray &outRay) const;
   virtual bool diffuse(const Ray &inRay, const cv::Vec3d &intersection, const cv::Vec3d &normalVecN,
                        cv::Vec3d &color, Ray &outRay) const;
+  virtual bool refract(const Ray &inRay, const cv::Vec3d &intersection, const cv::Vec3d &normalVecN,
+                       cv::Vec3d &color, Ray &outRay) const;
 
   double getReflectProbability() const { return reflectProbability; }
   double getDiffuseProbability() const { return diffuseProbability; }
+  double getRefractProbability() const { return refractProbability; }
   bool isALight() const { return isLight; }
   std::shared_ptr<const cv::Vec3d> getLightColor() const { return lightColor; }
   std::string getName() const { return name; }
@@ -58,6 +67,9 @@ protected:
   const cv::Vec3d reflectColor;
   double diffuseProbability;
   const cv::Vec3d diffuseColor;
+  double refractProbability;
+  const cv::Vec3d refractColor;
+  double refractive;
   bool isLight;
   std::shared_ptr<const cv::Vec3d> lightColor;
 };
