@@ -49,7 +49,7 @@ cv::Vec3d alex::PathTrace::doTrace(const Ray &ray, TraceInfo *info, const cv::Ve
         info->appendInfo(PT_TYPE_REFLECT, object, intersection, outRay.getDirectionN());
         return doTrace(outRay, info, prevColor.mul(color));
       }
-      else if (item >= list.size()) {
+      else if (item >= (int)list.size()) {
         Log.e("trace", "invalid rouletteRandom");
         throw 1;
       }

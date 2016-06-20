@@ -32,10 +32,10 @@ public:
                                              const cv::Vec3d &xAxis,
                                              const cv::Vec3d &yAxis,
                                              double radius,
-                                             std::shared_ptr<const cv::Vec3d> lightColor) {
+                                             const cv::Vec3d &lightColor) {
     return std::shared_ptr<Sphere>(new Sphere(name, position, xAxis, yAxis,
                       0, cv::Vec3d(), 0, cv::Vec3d(),
-                      radius, true, lightColor));
+                      radius, true, std::shared_ptr<const cv::Vec3d>(new cv::Vec3d(lightColor))));
   }
 
   virtual bool intersect(const Ray &ray, cv::Vec3d &intersection, cv::Vec3d &normalVecN, bool &outsideIn) const override;

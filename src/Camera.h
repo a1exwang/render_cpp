@@ -9,6 +9,7 @@
 #include "PathTrace.h"
 #include <opencv/cv.h>
 #include <memory>
+#include <mutex>
 
 
 namespace alex {
@@ -25,9 +26,10 @@ public:
          double imageDistance,
          double apertureRadius,
          double focalDistance,
-         int monteCarloTimes
+         int monteCarloTimes,
+         int maxTraceDepth
   ) :world(world),
-     pathTracer(new PathTrace(*world)),
+     pathTracer(new PathTrace(*world, maxTraceDepth)),
      position(position),
      frontN(normalize(front)),
      upN(normalize(up)),
@@ -47,11 +49,13 @@ public:
   std::shared_ptr<Ray> getRay(int x, int y) const;
   cv::Vec3d renderAt(int x, int y) const;
 
-  void startRendering() const;
+  void startRendering(std::size_t threads = 0) const;
 
 private:
   static cv::Vec3d intersectWithPlane(const Ray &ray, const cv::Vec3d &, const cv::Vec3d &);
 
+  void renderSingleThread() const;
+  void renderThreads(size_t n) const;
 private:
   std::shared_ptr<const World> world;
   std::shared_ptr<PathTrace> pathTracer;

@@ -5,6 +5,7 @@
 #include "Camera.h"
 #include "utils/Logger.h"
 #include "utils/MathUtils.h"
+#include "utils/ThreadPool.h"
 #include <cmath>
 
 #include <opencv/highgui.h>
@@ -50,7 +51,14 @@ cv::Vec3d alex::Camera::intersectWithPlane(const Ray &ray, const cv::Vec3d &poin
   return ray.getStartPoint() + ray.getDirectionN() * t;
 }
 
-void alex::Camera::startRendering() const {
+void alex::Camera::startRendering(std::size_t threads) const {
+  if (threads == 0)
+    renderSingleThread();
+  else
+    renderThreads(threads);
+}
+
+void alex::Camera::renderSingleThread() const {
   cv::Mat img(cv::Size(width, height), CV_8UC3);
 
   for (int x = 0; x < width; ++x) {
@@ -68,6 +76,48 @@ void alex::Camera::startRendering() const {
   }
   imwrite("image.png", img);
 }
+
+void alex::Camera::renderThreads(size_t n) const {
+  ThreadPool pool(n);
+
+  int totalCount = width * height;
+
+  std::shared_ptr<cv::Mat> img(new cv::Mat(cv::Size(width, height), CV_8UC3));
+  std::shared_ptr<std::mutex> mu(new std::mutex);
+  std::shared_ptr<int> finishedCount(new int(0));
+
+  for (int x = 0; x < width; ++x) {
+    for (int y = 0; y < height; ++y) {
+      pool.enqueue([x, y, totalCount, img, mu, finishedCount, this]() -> void {
+        auto color = renderAt(x, y);
+        cv::Vec3b newColor;
+        newColor[0] = (uint8_t) (color[0] * 255);
+        newColor[1] = (uint8_t) (color[1] * 255);
+        newColor[2] = (uint8_t) (color[2] * 255);
+
+        img->at<cv::Vec3b>(y, x) = newColor;
+
+        mu->lock();
+        {
+          *finishedCount += 1;
+          if (*finishedCount % (totalCount / 100) == 0)
+            std::cout << "progress " << std::setprecision(3) << 100.0 * *finishedCount / totalCount << "%" << std::endl;
+
+          if (*finishedCount == totalCount) {
+            imwrite("image.png", *img);
+            exit(0);
+          }
+        }
+        mu->unlock();
+      });
+    }
+  }
+
+}
+
+
+
+
 
 
 
