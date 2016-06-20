@@ -19,7 +19,7 @@ std::shared_ptr<alex::Ray> alex::Camera::getRay(int x, int y) const {
                         rightN * ((2.0 * x / this->width - 1) * this->retinaWidth) +
                         upN * ((2.0 * y / this->height - 1) * this->retinaHeight);
 
-  double theta = randRange(0, M_PI);
+  double theta = randRange(0, M_PI * 2);
   auto randVec = (rightN * cos(theta) + upN * sin(theta)) * this->apertureRadius;
   auto aperturePosition = this->position + randVec;
 

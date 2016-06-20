@@ -66,14 +66,14 @@ public:
       return ss.str();
     }
   };
-  PathTrace(const World &world, int maxTraceDepth) :world(world), maxTraceDepth(maxTraceDepth) { }
+  PathTrace(const World &world, size_t maxTraceDepth) :world(world), maxTraceDepth(maxTraceDepth) { }
   cv::Vec3d trace(const Ray &ray, TraceInfo *info) const;
 
 private:
   cv::Vec3d doTrace(const Ray &ray, TraceInfo *info, const cv::Vec3d &prevColor) const;
 
   const World &world;
-  int maxTraceDepth;
+  size_t maxTraceDepth;
 };
 }
 

@@ -11,7 +11,7 @@ cv::Vec3d alex::PathTrace::trace(const alex::Ray &ray, TraceInfo *info) const {
 }
 
 cv::Vec3d alex::PathTrace::doTrace(const Ray &ray, TraceInfo *info, const cv::Vec3d &prevColor) const {
-  if (norm(prevColor) < alex::Epsilon || info->data.size() > 10) {
+  if (norm(prevColor) < alex::Epsilon * 0.1 || info->data.size() > maxTraceDepth) {
     info->appendInfo(PT_TYPE_TOO_WEAK);
     Log.i("trace", info->toString());
     return prevColor;

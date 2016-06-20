@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
                 0.0001,               // aperture
                 0.017,                // f
                 monteCarloTimes,      // monte carlo times
-                13                    // max trace depth
+                30                    // max trace depth
   );
 
   world->addObject(Sphere::createLight(
@@ -110,10 +110,10 @@ int main(int argc, char** argv) {
           Vec3d(0, 0, -4),  // position
           Vec3d(0, 0, 1),  // normalVec
           Vec3d(0, 1, 0),  // yAxis
-          0.5,             // reflect
+          0.7,             // reflect
           Vec3d(1, 1, 1),
-          0.4,             // diffuse
-          Vec3d(1, 1, 1)
+          0.3,             // diffuse
+          Vec3d(0.8, 0.8, 0.8)
   )));
 
   world->addObject(shared_ptr<Plane>(new Plane(
@@ -124,7 +124,7 @@ int main(int argc, char** argv) {
           0.5,             // reflect
           Vec3d(1, 1, 1),
           0.4,             // diffuse
-          Vec3d(0, 0, 1)
+          Vec3d(0, 1, 1)
   )));
   world->addObject(shared_ptr<Plane>(new Plane(
           "FrontWall",
@@ -145,7 +145,7 @@ int main(int argc, char** argv) {
           0.5,             // reflect
           Vec3d(1, 1, 1),
           0.4,             // diffuse
-          Vec3d(1, 0, 0)
+          Vec3d(1, 0, 1)
   )));
 
   world->addObject(shared_ptr<Plane>(new Plane(
@@ -156,7 +156,7 @@ int main(int argc, char** argv) {
           0.5,             // reflect
           Vec3d(1, 1, 1),
           0.4,             // diffuse
-          Vec3d(0, 1, 0)
+          Vec3d(0, 0, 1)
   )));
 
   camera.startRendering(threadCount); // render threads
