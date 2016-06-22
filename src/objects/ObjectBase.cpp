@@ -7,7 +7,7 @@
 
 bool alex::ObjectBase::reflect(const Ray &inRay, const cv::Vec3d &intersection, const cv::Vec3d &normalVecN,
                                cv::Vec3d &color, Ray &outRay) const {
-  double cosTheta = inRay.getDirectionN().dot(normalVecN);
+  double cosTheta = -inRay.getDirectionN().dot(normalVecN);
   auto front = (normalVecN * (2 * cosTheta) + inRay.getDirectionN());
   outRay = Ray(intersection + normalVecN * alex::Epsilon, front);
   color = reflectColor;
@@ -39,7 +39,7 @@ bool alex::ObjectBase::diffuse(const alex::Ray &inRay, const cv::Vec3d &intersec
 
   auto direction = zAxis * sin(theta) + (yAxis * cos(phi) + xAxis * sin(phi)) * cos(theta);
 
-  outRay = Ray(intersection, direction + normalVecN * alex::Epsilon);
+  outRay = Ray(intersection + normalVecN * alex::Epsilon, direction);
   color = diffuseColor;
   return true;
 }
@@ -74,5 +74,31 @@ bool alex::ObjectBase::refract(const Ray &inRay, const cv::Vec3d &intersection, 
   color = refractColor;
   return true;
 }
+
+cv::Vec3d alex::ObjectBase::randomChooseRayByBRDFDistribution(const cv::Vec3d &normalVecN) const {
+  auto zAxis = normalVecN;
+  auto yAxis = getAVerticalNVec(normalVecN);
+  auto xAxis = yAxis.cross(zAxis);
+
+  double theta = randRange(0, M_PI / 2);
+  double phi = randRange(0, M_PI * 2);
+
+  auto direction = zAxis * sin(theta) + (yAxis * cos(phi) + xAxis * sin(phi)) * cos(theta);
+
+  return direction;
+}
+
+bool alex::ObjectBase::brdf(const Ray &inRay, const cv::Vec3d &intersection, const cv::Vec3d &normalVecN,
+                            cv::Vec3d &color, Ray &outRay) const {
+
+  outRay = Ray(intersection + normalVecN * alex::Epsilon, randomChooseRayByBRDFDistribution(normalVecN));
+  double thetaOut = acos(outRay.getDirectionN().dot(normalVecN));
+  this->brdfPtr->readColor(acos(inRay.getDirectionN().dot(-normalVecN)), 0, thetaOut, M_PI, color);
+  return true;
+}
+
+
+
+
 
 

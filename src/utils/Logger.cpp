@@ -9,6 +9,7 @@
 #include <sstream>
 #include <sys/time.h>
 #include <cstdarg>
+#include <memory>
 
 alex::Logger *alex::Logger::theInstance = nullptr;
 
@@ -93,46 +94,56 @@ void alex::Logger::output(int level, std::string tag, std::string str, int inden
   }
 }
 void alex::Logger::v(std::string tag, std::string str, int indent, ...) const {
-  char buf[1024];
 
   va_list args;
   va_start(args, indent);
-  vsnprintf(buf, sizeof(buf), str.c_str(), args);
+
+  int bufSize = vsnprintf(NULL, 0, str.c_str(), args);
+  std::shared_ptr<char> buf(new char[bufSize + 1]);
+  snprintf(buf.get(), (size_t)bufSize + 1, str.c_str(), args);
+
   va_end(args);
 
-  output(Level::Verbose, tag, buf, indent);
+  output(Level::Verbose, tag, buf.get(), indent);
 }
 
 
 void alex::Logger::i(std::string tag, std::string str, int indent, ...) const {
-  char buf[1024];
-
   va_list args;
   va_start(args, indent);
-  vsnprintf(buf, sizeof(buf), str.c_str(), args);
+
+  int bufSize = vsnprintf(NULL, 0, str.c_str(), args);
+  std::shared_ptr<char> buf(new char[bufSize + 1]);
+  snprintf(buf.get(), (size_t)bufSize + 1, str.c_str(), args);
+
   va_end(args);
 
-  output(Level::Info, tag, buf, indent);
+  output(Level::Info, tag, buf.get(), indent);
 }
-void alex::Logger::w(std::string tag, std::string str, int indent, ...) const {
-  char buf[1024];
 
+void alex::Logger::w(std::string tag, std::string str, int indent, ...) const {
   va_list args;
   va_start(args, indent);
-  vsnprintf(buf, sizeof(buf), str.c_str(), args);
+
+  int bufSize = vsnprintf(NULL, 0, str.c_str(), args);
+  std::shared_ptr<char> buf(new char[bufSize + 1]);
+  snprintf(buf.get(), (size_t)bufSize + 1, str.c_str(), args);
+
   va_end(args);
 
-  output(Level::Warning, tag, buf, indent);
+  output(Level::Warning, tag, buf.get(), indent);
 }
 void alex::Logger::e(std::string tag, std::string str, int indent, ...) const {
-  char buf[1024];
-
   va_list args;
   va_start(args, indent);
-  vsnprintf(buf, sizeof(buf), str.c_str(), args);
+
+  int bufSize = vsnprintf(NULL, 0, str.c_str(), args);
+  std::shared_ptr<char> buf(new char[bufSize + 1]);
+  snprintf(buf.get(), (size_t)bufSize + 1, str.c_str(), args);
+
   va_end(args);
 
-  output(Level::Error, tag, buf, indent);
+  output(Level::Error, tag, buf.get(), indent);
 }
 
 

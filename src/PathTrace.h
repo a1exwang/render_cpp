@@ -13,6 +13,7 @@
 namespace alex {
 
 constexpr const char *PT_TYPE_DIFFUSE = "diffuse";
+constexpr const char *PT_TYPE_BRDF = "brdf";
 constexpr const char *PT_TYPE_REFLECT = "reflect";
 constexpr const char *PT_TYPE_REFRACT = "refract";
 constexpr const char *PT_TYPE_LIGHT = "light";
@@ -28,37 +29,43 @@ public:
 
     struct _Data {
       std::shared_ptr<const ObjectBase> object;
+      cv::Vec3d prevColor;
       std::string type;
       cv::Vec3d intersection, direction;
+      bool outsideIn;
     };
     std::vector<_Data> data;
 
     TraceInfo(int x, int y) :x(x), y(y) { }
 
-    void appendInfo(std::string type, std::shared_ptr<const ObjectBase> object = nullptr,
+    void appendInfo(std::string type, const cv::Vec3d& prevColor, std::shared_ptr<const ObjectBase> object = nullptr,
                     cv::Vec3d intersection = cv::Vec3d(),
-                    cv::Vec3d direction = cv::Vec3d()) {
+                    cv::Vec3d direction = cv::Vec3d(), bool outsideIn = true) {
       _Data d;
       d.type = type;
+      d.prevColor = prevColor;
       d.object = object;
       d.intersection = intersection;
       d.direction = direction;
+      d.outsideIn = outsideIn;
       data.push_back(d);
     }
 
     std::string toString() const {
       std::stringstream ss;
       ss << "At (" << x << ", " << y << ")" << std::endl;
+
       for (std::size_t depth = 0; depth < data.size(); ++depth) {
         auto item = data[depth];
 
         // first line
         ss << item.type << ", depth = " << depth << std::endl;
-
+        ss << "  prevColor " << item.prevColor << std::endl;
         // rest lines
         if (item.type == PT_TYPE_DIFFUSE || item.type == PT_TYPE_REFLECT || item.type == PT_TYPE_LIGHT) {
           ss << "  on object(" << item.object->getName() << ", " << vec3ToStr(item.intersection) << ")" << std::endl;
           ss << "  direction " <<  vec3ToStr(item.direction) << std::endl;
+          ss << "  " << (item.outsideIn ? "outsideIn" : "insideOut") << std::endl;
         }
       }
       ss << std::endl;

@@ -27,7 +27,8 @@ public:
          double apertureRadius,
          double focalDistance,
          int monteCarloTimes,
-         int maxTraceDepth
+         int maxTraceDepth,
+         double finalColorIndex
   ) :world(world),
      pathTracer(new PathTrace(*world, maxTraceDepth)),
      position(position),
@@ -40,7 +41,8 @@ public:
      imageDistance(imageDistance),
      apertureRadius(apertureRadius),
      focalDistance(focalDistance),
-     monteCarloTimes(monteCarloTimes) {
+     monteCarloTimes(monteCarloTimes),
+     finalColorIndex(finalColorIndex) {
     rightN = frontN.cross(upN);
   }
 
@@ -48,6 +50,11 @@ public:
   int getHeight() const { return height; }
   std::shared_ptr<Ray> getRay(int x, int y) const;
   cv::Vec3d renderAt(int x, int y) const;
+
+  template<class ElementT>
+  static void serializeMat(std::string filePath, const cv::Mat &mat);
+  template<class ElementT>
+  static std::shared_ptr<cv::Mat> deserializeMat(std::string filePath);
 
   void startRendering(std::size_t threads = 0) const;
 
@@ -72,6 +79,7 @@ private:
   double apertureRadius;
   double focalDistance;
   int monteCarloTimes;
+  double finalColorIndex;
 };
 }
 

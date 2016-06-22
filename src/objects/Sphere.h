@@ -11,6 +11,7 @@ namespace alex {
 class Sphere :public ObjectBase {
 public:
   Sphere(std::string name,
+         const std::string &brdfFilePath,
          const cv::Vec3d &position,
          const cv::Vec3d &xAxis,
          const cv::Vec3d &yAxis,
@@ -24,7 +25,7 @@ public:
          double radius,
          bool isLight = false,
          std::shared_ptr<const cv::Vec3d> lightColor = nullptr
-  ) : ObjectBase(name, position, xAxis, yAxis,
+  ) : ObjectBase(name, brdfFilePath, position, xAxis, yAxis,
                  reflectProbability, reflectColor,
                  diffuseProbability, diffuseColor,
                  refractProbability, refractColor, refractive,
@@ -35,13 +36,14 @@ public:
   }
 
   static std::shared_ptr<Sphere> createLight(std::string name,
+                                             std::string brdfFilePath,
                                              const cv::Vec3d &position,
                                              const cv::Vec3d &xAxis,
                                              const cv::Vec3d &yAxis,
                                              double radius,
                                              const cv::Vec3d &lightColor) {
     return std::shared_ptr<Sphere>(
-            new Sphere(name, position, xAxis, yAxis,
+            new Sphere(name, brdfFilePath, position, xAxis, yAxis,
                       0, cv::Vec3d(), 0, cv::Vec3d(), 0, cv::Vec3d(), 1,
                       radius, true, std::shared_ptr<const cv::Vec3d>(new cv::Vec3d(lightColor))));
   }

@@ -12,6 +12,7 @@ class Plane :public ObjectBase {
 
 public:
   Plane(const std::string &name,
+        const std::string &brdfFilePath,
         const cv::Vec3d &position,
         const cv::Vec3d &xAxis,
         const cv::Vec3d &yAxis,
@@ -25,7 +26,7 @@ public:
         bool isLight = false,
         const std::shared_ptr<const cv::Vec3d> &lightColor = nullptr
   ) : ObjectBase(
-          name, position, xAxis, yAxis,
+          name, brdfFilePath, position, xAxis, yAxis,
           reflectProbability, reflectColor,
           diffuseProbability, diffuseColor,
           refractProbability, refractColor, refractive,
