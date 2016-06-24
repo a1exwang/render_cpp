@@ -12,8 +12,13 @@ if(OPENMP_FOUND)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 endif()
 
+#message("profiler enabled")
+#add_compile_options(-pg)
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
+
 set(SOURCE_FILES
         main.cpp
+        Scene.cpp
         src/PathTrace.cpp
         src/Camera.cpp
         src/World.cpp
@@ -23,9 +28,13 @@ set(SOURCE_FILES
         src/objects/Sphere.cpp
         src/utils/Logger.cpp
         src/utils/MathUtils.cpp
-        src/objects/Plane.cpp src/utils/BRDF.cpp src/utils/BRDF.h)
-#add_compile_options(-pg)
-#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
+        src/objects/Plane.cpp
+        src/utils/BRDF.cpp
+        )
+
+set(CMAKE_C_FLAGS_DEBUG "-DALEX_DEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-DALEX_DEBUG")
+
 add_compile_options(-DCV_SSE)
 add_compile_options(-DWITH_TBB)
 add_compile_options(-DCV_ENABLE_IPP)

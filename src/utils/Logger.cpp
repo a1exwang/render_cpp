@@ -50,7 +50,7 @@ static std::string getLevelStr(int level) {
   }
 }
 
-void alex::Logger::output(int level, std::string tag, std::string str, int indent) const {
+void alex::Logger::output(int level, std::string tag, std::string str, int indent) {
   if (level <= currentLevel && os != nullptr) {
     std::stringstream ss;
     ss << getLevelStr(level) << " ";
@@ -80,21 +80,26 @@ void alex::Logger::output(int level, std::string tag, std::string str, int inden
     std::stringstream anotherSS(str);
     std::string line;
     bool isFirstLine = true;
-    while(std::getline(anotherSS, line, '\n')){
-      (*os) << headString;
-      if (isFirstLine) {
-        isFirstLine = false;
+
+    mu.lock();
+    {
+      while(std::getline(anotherSS, line, '\n')){
+        (*os) << headString;
+        if (isFirstLine) {
+          isFirstLine = false;
+        }
+        else {
+          (*os) << "  ";
+        }
+        (*os) << line << std::endl;
       }
-      else {
-        (*os) << "  ";
-      }
-      (*os) << line << std::endl;
+      os->flush();
     }
-    os->flush();
+    mu.unlock();
   }
 }
-void alex::Logger::v(std::string tag, std::string str, int indent, ...) const {
-
+void alex::Logger::v(std::string tag, std::string str, int indent, ...) {
+#ifdef ALEX_DEBUG
   va_list args;
   va_start(args, indent);
 
@@ -105,10 +110,12 @@ void alex::Logger::v(std::string tag, std::string str, int indent, ...) const {
   va_end(args);
 
   output(Level::Verbose, tag, buf.get(), indent);
+#endif
 }
 
 
-void alex::Logger::i(std::string tag, std::string str, int indent, ...) const {
+void alex::Logger::i(std::string tag, std::string str, int indent, ...) {
+#ifdef ALEX_DEBUG
   va_list args;
   va_start(args, indent);
 
@@ -119,9 +126,11 @@ void alex::Logger::i(std::string tag, std::string str, int indent, ...) const {
   va_end(args);
 
   output(Level::Info, tag, buf.get(), indent);
+#endif
 }
 
-void alex::Logger::w(std::string tag, std::string str, int indent, ...) const {
+void alex::Logger::w(std::string tag, std::string str, int indent, ...) {
+#ifdef ALEX_DEBUG
   va_list args;
   va_start(args, indent);
 
@@ -132,8 +141,10 @@ void alex::Logger::w(std::string tag, std::string str, int indent, ...) const {
   va_end(args);
 
   output(Level::Warning, tag, buf.get(), indent);
+#endif
 }
-void alex::Logger::e(std::string tag, std::string str, int indent, ...) const {
+void alex::Logger::e(std::string tag, std::string str, int indent, ...) {
+#ifdef ALEX_DEBUG
   va_list args;
   va_start(args, indent);
 
@@ -144,6 +155,7 @@ void alex::Logger::e(std::string tag, std::string str, int indent, ...) const {
   va_end(args);
 
   output(Level::Error, tag, buf.get(), indent);
+#endif
 }
 
 

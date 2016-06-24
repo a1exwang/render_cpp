@@ -43,6 +43,7 @@ public:
      isLight(isLight),
      lightColor(lightColor)
   { }
+  virtual ~ObjectBase() { }
 
   virtual bool intersect(const Ray &ray, cv::Vec3d &intersection, cv::Vec3d &normalVecN, bool &outsideIn) const = 0;
   virtual bool isInner(const cv::Vec3d &point) const = 0;

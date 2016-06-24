@@ -5,15 +5,6 @@
 #include "ObjectBase.h"
 #include "../utils/MathUtils.h"
 
-bool alex::ObjectBase::reflect(const Ray &inRay, const cv::Vec3d &intersection, const cv::Vec3d &normalVecN,
-                               cv::Vec3d &color, Ray &outRay) const {
-  double cosTheta = -inRay.getDirectionN().dot(normalVecN);
-  auto front = (normalVecN * (2 * cosTheta) + inRay.getDirectionN());
-  outRay = Ray(intersection + normalVecN * alex::Epsilon, front);
-  color = reflectColor;
-  return true;
-}
-
 cv::Vec3d getAVerticalNVec(const cv::Vec3d &v) {
   if (norm(v) == 0) {
     throw "zero vector detected";
@@ -34,13 +25,25 @@ bool alex::ObjectBase::diffuse(const alex::Ray &inRay, const cv::Vec3d &intersec
   auto yAxis = getAVerticalNVec(normalVecN);
   auto xAxis = yAxis.cross(zAxis);
 
-  double theta = randRange(0, M_PI / 2);
+  double cosTheta = randRange(0, 1);
+  auto theta = acos(cosTheta);
+
+  //double theta = randRange(0, M_PI / 2);
   double phi = randRange(0, M_PI * 2);
 
   auto direction = zAxis * sin(theta) + (yAxis * cos(phi) + xAxis * sin(phi)) * cos(theta);
 
   outRay = Ray(intersection + normalVecN * alex::Epsilon, direction);
   color = diffuseColor;
+  return true;
+}
+
+bool alex::ObjectBase::reflect(const Ray &inRay, const cv::Vec3d &intersection, const cv::Vec3d &normalVecN,
+                               cv::Vec3d &color, Ray &outRay) const {
+  double cosTheta = -inRay.getDirectionN().dot(normalVecN);
+  auto front = (normalVecN * (2 * cosTheta) + inRay.getDirectionN());
+  outRay = Ray(intersection + normalVecN * alex::Epsilon, front);
+  color = reflectColor;
   return true;
 }
 

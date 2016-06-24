@@ -26,9 +26,9 @@ class PathTrace {
 public:
   struct TraceInfo {
     int x, y;
-
+    size_t depth;
     struct _Data {
-      std::shared_ptr<const ObjectBase> object;
+      const ObjectBase *object;
       cv::Vec3d prevColor;
       std::string type;
       cv::Vec3d intersection, direction;
@@ -36,9 +36,9 @@ public:
     };
     std::vector<_Data> data;
 
-    TraceInfo(int x, int y) :x(x), y(y) { }
+    TraceInfo(int x, int y) :x(x), y(y), depth(0) { }
 
-    void appendInfo(std::string type, const cv::Vec3d& prevColor, std::shared_ptr<const ObjectBase> object = nullptr,
+    void appendInfo(std::string type, const cv::Vec3d& prevColor, const ObjectBase *object = nullptr,
                     cv::Vec3d intersection = cv::Vec3d(),
                     cv::Vec3d direction = cv::Vec3d(), bool outsideIn = true) {
       _Data d;

@@ -6,18 +6,18 @@
 #include "ObjectManager.h"
 #include <memory>
 
-void alex::ObjectManager::addObject(std::shared_ptr<ObjectBase> object) {
+void alex::ObjectManager::addObject(ObjectBase *object) {
   objects.push_back(object);
 }
 
-std::shared_ptr<const alex::ObjectBase> alex::ObjectManager::determineIntersection(
+const alex::ObjectBase *alex::ObjectManager::determineIntersection(
         const Ray &ray,
         cv::Vec3d &intersection, 
         cv::Vec3d &normalVecN, 
         bool &outsideIn) const {
 
   double nearestDis = 10e10;
-  std::shared_ptr<const ObjectBase> ret = nullptr;
+  const ObjectBase *ret = nullptr;
 
   cv::Vec3d nearestIntersection;
   cv::Vec3d nearestNormalVecN;

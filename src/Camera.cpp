@@ -61,28 +61,32 @@ void alex::Camera::startRendering(std::size_t threads) const {
 }
 
 void alex::Camera::renderSingleThread() const {
-  cv::Mat img(cv::Size(width, height), CV_8UC3);
+  cv::Mat imgDouble(cv::Size(width, height), CV_64FC3);
+
+  for (int x = 0; x < width; ++x) {
+    for (int y = 0; y < height; ++y) {
+      imgDouble.at<cv::Vec3d>(y, x) = renderAt(x, y);
+    }
+
+    fprintf(stderr, "\rfinished %0.2f%%", 100.0 * (x+1) / width);
+  }
+
+  saveToFile(imgDouble);
+}
+
+void alex::Camera::startRenderingOpenMP() const {
+  cv::Mat imgDouble(cv::Size(width, height), CV_64FC3);
 
   #pragma omp parallel for schedule(dynamic, 1)       // OpenMP
   for (int x = 0; x < width; ++x) {
     for (int y = 0; y < height; ++y) {
-      auto color = renderAt(x, y);
-      cv::Vec3b newColor;
-      if (color[0] > 1 || color[1] > 1 || color[2] > 1) {
-        Log.e("camera", "color greater than 1. color %f, %f, %f", 0, color[0], color[1], color[2]);
-        abort();
-      }
-      color *= finalColorIndex;
-      newColor[0] = std::min((uint8_t)(color[0] * 255), (uint8_t)255u);
-      newColor[1] = std::min((uint8_t)(color[1] * 255), (uint8_t)255u);
-      newColor[2] = std::min((uint8_t)(color[2] * 255), (uint8_t)255u);
-
-      img.at<cv::Vec3b>(y, x) = newColor;
+      imgDouble.at<cv::Vec3d>(y, x) = renderAt(x, y);
     }
-    if (x % 10 == 0)
-      std::cout << "progress " << std::setprecision(3) << 100.0 * x / width << "%" << std::endl;
+
+    fprintf(stderr, "\rfinished %0.2f%%", 100.0 * (x+1) / width);
   }
-  imwrite("image.png", img);
+
+  saveToFile(imgDouble);
 }
 
 void alex::Camera::renderThreads(size_t n) const {
@@ -90,44 +94,45 @@ void alex::Camera::renderThreads(size_t n) const {
 
   int totalCount = width * height;
 
-  std::shared_ptr<cv::Mat> img(new cv::Mat(cv::Size(width, height), CV_8UC3));
   std::shared_ptr<cv::Mat> imgDouble(new cv::Mat(cv::Size(width, height), CV_64FC3));
   std::shared_ptr<std::mutex> mu(new std::mutex);
   std::shared_ptr<int> finishedCount(new int(0));
 
   for (int x = 0; x < width; ++x) {
     for (int y = 0; y < height; ++y) {
-      pool.enqueue([x, y, totalCount, img, imgDouble, mu, finishedCount, this]() -> void {
-        auto color = renderAt(x, y);
-        cv::Vec3b newColor;
-        if (color[0] > 1 || color[1] > 1 || color[2] > 1) {
-          Log.e("camera", "color greater than 1. color %f, %f, %f", 0, color[0], color[1], color[2]);
-          abort();
-        }
-        color *= finalColorIndex;
-        newColor[0] = std::min((uint8_t)(color[0] * 255), (uint8_t)255u);
-        newColor[1] = std::min((uint8_t)(color[1] * 255), (uint8_t)255u);
-        newColor[2] = std::min((uint8_t)(color[2] * 255), (uint8_t)255u);
+      pool.enqueue([x, y, totalCount, imgDouble, mu, finishedCount, this]() -> void {
+        imgDouble->at<cv::Vec3d>(y, x) = renderAt(x, y);
 
-        img->at<cv::Vec3b>(y, x) = newColor;
-        imgDouble->at<cv::Vec3d>(y, x) = color;
-        mu->lock();
         {
-          *finishedCount += 1;
+          std::lock_guard<std::mutex> _guard(*mu);
+          (void)_guard;
+          (*finishedCount)++;
           if (*finishedCount % (totalCount / 100) == 0)
-            std::cout << "progress " << std::setprecision(3) << 100.0 * *finishedCount / totalCount << "%" << std::endl;
+            fprintf(stderr, "\rfinished %0.2f%%", 100.0 * (*finishedCount + 1) / totalCount);
 
           if (*finishedCount == totalCount) {
-            imwrite("image.png", *img);
-            std::cout << *imgDouble;
-            serializeMat<double>("tmp.mat", *imgDouble);
+            saveToFile(*imgDouble);
             exit(0);
           }
         }
-        mu->unlock();
+
       });
     }
   }
+}
+
+void alex::Camera::saveToFile(const cv::Mat &imgDouble) const {
+  cv::Mat img;
+  imgDouble.convertTo(img, CV_8UC3, colorEnhancement * 255);
+  imwrite("image.png", img);
+
+  std::cout << imgDouble;
+  serializeMat3d("tmp.mat", imgDouble);
+}
+
+
+std::shared_ptr<cv::Mat> alex::Camera::deserializeMat3d(std::string filePath) {
+  return deserializeMat<double>(filePath);
 }
 
 template<class ElementT>
@@ -135,7 +140,7 @@ void alex::Camera::serializeMat(std::string filePath, const cv::Mat &mat) {
   std::ofstream of(filePath, std::ios::out | std::ios::trunc);
   of << mat.rows << ' ' << mat.cols << std::endl;
   for (int i = 0; i < mat.rows; ++i) {
-    for (int j = 0; j < mat.cols; ++i) {
+    for (int j = 0; j < mat.cols; ++j) {
       auto vector = mat.at<cv::Vec<ElementT, 3>>(j, i);
       of << vector[0] << ' ' << vector[1] << ' ' << vector[2] << ' ';
     }
@@ -160,18 +165,9 @@ std::shared_ptr<cv::Mat> alex::Camera::deserializeMat(std::string filePath) {
   return ret;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
+void alex::Camera::serializeMat3d(std::string filePath, const cv::Mat &mat) {
+  serializeMat<double>(filePath, mat);
+}
 
 
 

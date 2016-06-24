@@ -11,9 +11,12 @@ cv::Vec3d alex::PathTrace::trace(const alex::Ray &ray, TraceInfo *info) const {
 }
 
 cv::Vec3d alex::PathTrace::doTrace(const Ray &ray, TraceInfo *info, const cv::Vec3d &prevColor) const {
-  if (/*norm(prevColor) < alex::Epsilon * 0.1 ||*/ info->data.size() > maxTraceDepth) {
+  info->depth++;
+  if (/*norm(prevColor) < alex::Epsilon * 0.1 ||*/ info->depth > maxTraceDepth) {
+#ifdef ALEX_DEBUG
     info->appendInfo(PT_TYPE_TOO_WEAK, prevColor);
     Log.v("trace", info->toString());
+#endif
     return prevColor;
   }
 
@@ -25,8 +28,10 @@ cv::Vec3d alex::PathTrace::doTrace(const Ray &ray, TraceInfo *info, const cv::Ve
     if (object->isALight()) {
       auto lightColor = object->getLightColor();
       if (lightColor != nullptr) {
+#ifdef ALEX_DEBUG
         info->appendInfo(PT_TYPE_LIGHT, prevColor, object, intersection, cv::Vec3d(), outsideIn);
         Log.i("trace", info->toString());
+#endif
         return *lightColor;
       }
       else {
@@ -45,26 +50,27 @@ cv::Vec3d alex::PathTrace::doTrace(const Ray &ray, TraceInfo *info, const cv::Ve
 //        throw "brdf failed";
 //      }
       std::initializer_list<double> list(
-              { object->getDiffuseProbability(), object->getReflectProbability(), /*object->getRefractProbability()*/ });
+              { object->getDiffuseProbability(), object->getReflectProbability(), object->getRefractProbability() });
       constexpr int indexDiffuse = 0, indexReflect = 1, indexRefract = 2;
       int item = rouletteRandom(list);
       cv::Vec3d color;
       Ray outRay;
       if (item == indexDiffuse && object->diffuse(ray, intersection, normalVecN, color, outRay)) {
+#ifdef ALEX_DEBUG
         info->appendInfo(PT_TYPE_DIFFUSE, prevColor, object, intersection, outRay.getDirectionN(), outsideIn);
+#endif
         return doTrace(outRay, info, prevColor.mul(color));
       }
       else if (item == indexReflect && object->reflect(ray, intersection, normalVecN, color, outRay)) {
-        if (object->getName() == "FrontWall" && info->data.size() == 0) {
-          info->appendInfo(PT_TYPE_REFLECT, prevColor, object, intersection, outRay.getDirectionN(), outsideIn);
-          return doTrace(outRay, info, prevColor.mul(color));
-        }
-
+#ifdef ALEX_DEBUG
         info->appendInfo(PT_TYPE_REFLECT, prevColor, object, intersection, outRay.getDirectionN(), outsideIn);
+#endif
         return doTrace(outRay, info, prevColor.mul(color));
       }
       else if (item == indexRefract && object->refract(ray, intersection, normalVecN, color, outRay)) {
+#ifdef ALEX_DEBUG
         info->appendInfo(PT_TYPE_REFRACT, prevColor, object, intersection, outRay.getDirectionN(), outsideIn);
+#endif
         return doTrace(outRay, info, prevColor.mul(color));
       }
       else if (item >= (int)list.size()) {
@@ -72,15 +78,19 @@ cv::Vec3d alex::PathTrace::doTrace(const Ray &ray, TraceInfo *info, const cv::Ve
         throw 1;
       }
       else {
+#ifdef ALEX_DEBUG
         info->appendInfo(PT_TYPE_NO_OUTBOUND, prevColor);
         Log.i("trace", info->toString());
+#endif
         return cv::Vec3d(0, 0, 0);
       }
     }
   }
   else {
+#ifdef ALEX_DEBUG
     info->appendInfo(PT_TYPE_NO_INTERSECTION, prevColor);
     Log.v("trace", info->toString());
+#endif
     return cv::Vec3d(0, 0, 0);
   }
 }

@@ -35,17 +35,16 @@ public:
     this->radius = radius;
   }
 
-  static std::shared_ptr<Sphere> createLight(std::string name,
+  static Sphere *createLight(std::string name,
                                              std::string brdfFilePath,
                                              const cv::Vec3d &position,
                                              const cv::Vec3d &xAxis,
                                              const cv::Vec3d &yAxis,
                                              double radius,
                                              const cv::Vec3d &lightColor) {
-    return std::shared_ptr<Sphere>(
-            new Sphere(name, brdfFilePath, position, xAxis, yAxis,
+    return new Sphere(name, brdfFilePath, position, xAxis, yAxis,
                       0, cv::Vec3d(), 0, cv::Vec3d(), 0, cv::Vec3d(), 1,
-                      radius, true, std::shared_ptr<const cv::Vec3d>(new cv::Vec3d(lightColor))));
+                      radius, true, std::shared_ptr<const cv::Vec3d>(new cv::Vec3d(lightColor)));
   }
 
   virtual bool intersect(const Ray &ray, cv::Vec3d &intersection, cv::Vec3d &normalVecN, bool &outsideIn) const override;

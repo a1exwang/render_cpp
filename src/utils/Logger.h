@@ -7,7 +7,8 @@
 
 #include <string>
 #include <iostream>
-#include <cxcore.h>
+#include <cv.h>
+#include <mutex>
 
 namespace alex {
 
@@ -35,21 +36,22 @@ public:
     theInstance->resetVerboseLevel(verboseLevel);
   }
 
-  void v(std::string tag, std::string str, int indent = 0, ...) const;
-  void i(std::string tag, std::string str, int indent = 0, ...) const;
-  void w(std::string tag, std::string str, int indent = 0, ...) const;
-  void e(std::string tag, std::string str, int indent = 0, ...) const;
+  void v(std::string tag, std::string str, int indent = 0, ...);
+  void i(std::string tag, std::string str, int indent = 0, ...);
+  void w(std::string tag, std::string str, int indent = 0, ...);
+  void e(std::string tag, std::string str, int indent = 0, ...);
 
 private:
   Logger(std::ostream *os = nullptr) :os(os), needFlush(false), needDelete(false) { }
 
   void resetOutput(std::string output = "stdout");
   void resetVerboseLevel(int l) { this->currentLevel = l; }
-  void output(int level, std::string tag, std::string str, int indent = 0) const;
+  void output(int level, std::string tag, std::string str, int indent = 0);
   std::ostream *os;
   bool needFlush;
   bool needDelete;
   int currentLevel;
+  std::mutex mu;
 
   static Logger *theInstance;
 };

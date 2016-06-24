@@ -14,13 +14,15 @@ namespace alex {
 class ObjectManager {
 public:
   ObjectManager() { }
-  void addObject(std::shared_ptr<ObjectBase> object);
-  std::shared_ptr<const ObjectBase> determineIntersection(const Ray &ray,
+  ~ObjectManager() { for (auto ptr : objects) delete ptr; }
+  void addObject(ObjectBase *object);
+
+  const ObjectBase *determineIntersection(const Ray &ray,
                              cv::Vec3d &intersection, 
                              cv::Vec3d &normalVecN, 
                              bool &outsideIn) const;
 private:
-  std::vector<std::shared_ptr<ObjectBase>> objects;
+  std::vector<ObjectBase *> objects;
 };
 }
 

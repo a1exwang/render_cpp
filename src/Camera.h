@@ -27,8 +27,8 @@ public:
          double apertureRadius,
          double focalDistance,
          int monteCarloTimes,
-         int maxTraceDepth,
-         double finalColorIndex
+         size_t maxTraceDepth,
+         double colorEnhancement
   ) :world(world),
      pathTracer(new PathTrace(*world, maxTraceDepth)),
      position(position),
@@ -42,7 +42,7 @@ public:
      apertureRadius(apertureRadius),
      focalDistance(focalDistance),
      monteCarloTimes(monteCarloTimes),
-     finalColorIndex(finalColorIndex) {
+     colorEnhancement(colorEnhancement) {
     rightN = frontN.cross(upN);
   }
 
@@ -56,13 +56,17 @@ public:
   template<class ElementT>
   static std::shared_ptr<cv::Mat> deserializeMat(std::string filePath);
 
-  void startRendering(std::size_t threads = 0) const;
+  static void serializeMat3d(std::string filePath, const cv::Mat &mat);
+  static std::shared_ptr<cv::Mat> deserializeMat3d(std::string filePath);
 
+  void startRendering(std::size_t threads = 0) const;
+  void startRenderingOpenMP() const;
 private:
   static cv::Vec3d intersectWithPlane(const Ray &ray, const cv::Vec3d &, const cv::Vec3d &);
 
   void renderSingleThread() const;
   void renderThreads(size_t n) const;
+  void saveToFile(const cv::Mat &imgDouble) const;
 private:
   std::shared_ptr<const World> world;
   std::shared_ptr<PathTrace> pathTracer;
@@ -79,7 +83,7 @@ private:
   double apertureRadius;
   double focalDistance;
   int monteCarloTimes;
-  double finalColorIndex;
+  double colorEnhancement;
 };
 }
 

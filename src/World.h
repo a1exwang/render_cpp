@@ -13,9 +13,9 @@
 namespace alex {
 class World {
 public:
-  void addObject(std::shared_ptr<ObjectBase> object) { objectManager.addObject(object); }
+  void addObject(ObjectBase *object) { objectManager.addObject(object); }
 
-  std::shared_ptr<const ObjectBase> determineIntersection(const Ray &ray,
+  const ObjectBase *determineIntersection(const Ray &ray,
                              cv::Vec3d &intersection,
                              cv::Vec3d &normalVecN,
                              bool &outsideIn) const {
